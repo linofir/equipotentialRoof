@@ -1,0 +1,17 @@
+# Ignorar arquivos de compilação do Unity
+/Build/
+/Builds/
+
+# Ignorar arquivos de configuração do editor do Unity
+/*.sln
+/*.csproj
+/*.pidb
+/*.suo
+/*.user
+/*.userprefs
+/*.unityproj
+/*.booproj
+
+# Ignorar arquivos temporários do Unity
+/Temp/
+/obj/
