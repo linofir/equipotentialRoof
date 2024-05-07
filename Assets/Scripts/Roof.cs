@@ -22,63 +22,11 @@ public class Roof : MonoBehaviour
         InstantiatePoint(source);
         InstantiatePoint( roofPointsList[0]);
 
-        //criar método que calcula cada ponto do teto
-        //CreateRoofFaces();
-
-       
-
-            // //criar vetores auxiliares
-
-            // Vector3 sourceVec = SubtractionVectors(source, roofPointsList[0]);
-            // Vector3 directionSource = sourceVec.normalized;
-            // float lengthRoofToSourceVec = sourceVec.magnitude;
-
-            // CreateLine(roofPointsList[0], directionSource, lengthRoofToSourceVec );
-
-            // Vector3 bleachersVector = SubtractionVectors(bleachersPoints[0], roofPointsList[0] );
-            // Vector3 directionBlechers = bleachersVector.normalized;
-            // float lengthBleachers = bleachersVector.magnitude;
-
-            // CreateLine(roofPointsList[0], directionBlechers, lengthBleachers );
-
-            // //cauculateAngle
-
-            // float bisecAngle = CalculateAngle(directionSource, directionBlechers);
-            // Debug.Log($"angulo entre vetores {bisecAngle}");
-
-            // //ImageVector
-
-            // Vector3 imageVector = CalculateImageVector(-directionBlechers, roofPointsList[0], lengthRoofToSourceVec);
-            // InstantiatePoint( imageVector); 
-
-            // //create roof line
-            
-            // float roofLength = 20f;
-            
-            // Vector3 xAxisVector = new Vector3(1, 0, 0);
-
-            // float xAxisAngleWithBlechers = CalculateAngle(xAxisVector, directionBlechers); 
-            // // Debug.Log($"Angulo entre o eixo x = {xAxisAngleWithBlechers}");
-            // // Vector3 bleachersProjection = CreateVectorFromAngle(-xAxisAngleWithBlechers, directionBlechers);
-            // // CreateLine(roofPointsList[0], bleachersProjection.normalized, roofLength);
-
-            // float roofAngleWithXAxis = 90 - (bisecAngle/2) - xAxisAngleWithBlechers;
-
-            // Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, directionBlechers);
-            // CreateLine(roofPointsList[0], directionRoof, roofLength);
-
-            // // Find intersec point
-            // Vector3 imageToLastBleachersPoint = bleachersPoints[4] - imageVector;
-            // Vector3 imageDirection = imageToLastBleachersPoint.normalized;
-            // float lineLenght = imageToLastBleachersPoint.magnitude;
-            // CreateLine(imageVector, imageDirection, lineLenght);
-            // Vector3 intersecPoint = CalculateLineIntersection(directionRoof, imageDirection, roofPointsList[0], imageVector);
-            // InstantiatePoint( intersecPoint);
-
+        CreateRoofFaces(bleachersPoints, roofPointsList, source);
         
     }
 
-    private void CreateRoofFaces(List<Vector3> bleachersPointsList, List<Vector3> roofPointsList, Vector3 sourceVec)
+    private void CreateRoofFaces(List<Vector3> bleachersPointsList, List<Vector3> roofPoints, Vector3 source)
     {
 
         for(int i = 0; i< bleachersPointsList.Count -1; i++ )
@@ -87,17 +35,17 @@ public class Roof : MonoBehaviour
 
             //criar vetores auxiliares
 
-            sourceVec = SubtractionVectors(source, roofPointsList[i]);
+            Vector3 sourceVec = SubtractionVectors(source, roofPoints[i]);
             Vector3 directionSource = sourceVec.normalized;
             float lengthRoofToSourceVec = sourceVec.magnitude;
 
-            CreateLine(roofPointsList[i], directionSource, lengthRoofToSourceVec );
+            CreateLine(roofPoints[i], directionSource, lengthRoofToSourceVec );
 
-            Vector3 bleachersVector = SubtractionVectors(bleachersPointsList[i], roofPointsList[i] );
+            Vector3 bleachersVector = SubtractionVectors(bleachersPointsList[i], roofPoints[i] );
             Vector3 directionBlechers = bleachersVector.normalized;
             float lengthBleachers = bleachersVector.magnitude;
 
-            CreateLine(roofPointsList[i], directionBlechers, lengthBleachers );
+            CreateLine(roofPoints[i], directionBlechers, lengthBleachers );
 
             //cauculateAngle
 
@@ -106,7 +54,7 @@ public class Roof : MonoBehaviour
 
             //ImageVector
 
-            Vector3 imageVector = CalculateImageVector(-directionBlechers, roofPointsList[i], lengthRoofToSourceVec);
+            Vector3 imageVector = CalculateImageVector(-directionBlechers, roofPoints[i], lengthRoofToSourceVec);
             InstantiatePoint( imageVector); 
 
             //create roof line
@@ -116,22 +64,25 @@ public class Roof : MonoBehaviour
             Vector3 xAxisVector = new Vector3(1, 0, 0);
 
             float xAxisAngleWithBlechers = CalculateAngle(xAxisVector, directionBlechers); 
-            // Debug.Log($"Angulo entre o eixo x = {xAxisAngleWithBlechers}");
-            // Vector3 bleachersProjection = CreateVectorFromAngle(-xAxisAngleWithBlechers, directionBlechers);
-            // CreateLine(roofPointsList[i], bleachersProjection.normalized, roofLength);
 
             float roofAngleWithXAxis = 90 - (bisecAngle/2) - xAxisAngleWithBlechers;
-
-            Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, directionBlechers);
-            CreateLine(roofPointsList[i], directionRoof, roofLength);
+            
+            Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, xAxisVector);
+            //Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, directionBlechers);
+            CreateLine(roofPoints[i], directionRoof, roofLength);
 
             // Find intersec point
             Vector3 imageToLastBleachersPoint = bleachersPointsList[bleachersPointsList.Count - 1] - imageVector;
             Vector3 imageDirection = imageToLastBleachersPoint.normalized;
             float lineLenght = imageToLastBleachersPoint.magnitude;
             CreateLine(imageVector, imageDirection, lineLenght);
-            Vector3 intersecPoint = CalculateLineIntersection(directionRoof, imageDirection, roofPointsList[i], imageVector);
+            Vector3 intersecPoint = CalculateLineIntersection(directionRoof, imageDirection, roofPoints[i], imageVector);
             InstantiatePoint( intersecPoint);
+
+            //add new point to roofPointsList
+
+            roofPointsList.Add(intersecPoint);
+
         }
         
     }
@@ -170,19 +121,12 @@ public class Roof : MonoBehaviour
 
     public float CalculateAngle(Vector3 vectorA, Vector3 vectorB)
     {
-        // Calcular o produto escalar dos vetores
         float dotProduct = Vector3.Dot(vectorA, vectorB);
-        //Debug.Log($"Resultado dotProd = {dotProduct}");
-
-        // Calcular o arccoseno do ângulo entre os vetores com os vetores normalizados
+        
         float arcCosine = Mathf.Acos(dotProduct);
-        //Debug.Log($"arc coseno é = {arcCosine}");
 
-        // Converter o ângulo de radianos para graus
         float angleDeg = arcCosine * Mathf.Rad2Deg;
-        //Debug.Log($"anulo em deg = {angleDeg}");
-
-        // Retornar o ângulo entre os vetores em graus
+        
         return angleDeg;
     }
 
@@ -222,15 +166,7 @@ public class Roof : MonoBehaviour
             //return Vector3.positiveInfinity; // Retornar ponto de interseção indefinido
         }
 
-        Debug.Log("não são paralelos");
-
-        // Calcular os vetores entre os pontos
-        // Vector3 p1p2 = point2 - point1;
-        // Vector3 p2p1 = point1 - point2;
-
-        // // Calcular os parâmetros t1 e t2
-        // float t1;
-        // float t2 = roofPoint.x - imagePoint.x + direction1.x * ()
+        //cramer rule
 
         float numerator1 = (imagePoint.x - roofPoint.x) * direction2.y - (imagePoint.y - roofPoint.y) * direction2.x;
         float numerator2 = (imagePoint.x - roofPoint.x) * direction1.y - (imagePoint.y - roofPoint.y) * direction1.x;

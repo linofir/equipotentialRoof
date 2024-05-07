@@ -16,60 +16,36 @@ public class MeshManipulation : MonoBehaviour
     {
         stairsMesh = new Mesh();
         stairsMesh = GetComponent<MeshFilter>().mesh;
-        //stairsMesh.Clear();
+
         if(stairsMesh != null)
         {
-            //StartCoroutine(CollectMeshDataCoroutine());
             CollectMeshData();
-            //Debug.Log("Inside true stairMesh");
-            // using (var dataArray = Mesh.AcquireReadOnlyMeshData(stairsMesh))
-            // {
-            //     var data = dataArray[0];
-            //     // prints "2"
-            //     Debug.Log(data.vertexCount);
-            //     var gotVertices = new NativeArray<Vector3>(stairsMesh.vertexCount, Allocator.TempJob);
-            //     data.GetVertices(gotVertices);
-            //     // prints "(1.0, 1.0, 1.0)" and "(0.0, 0.0, 0.0)"
-            //     foreach (var v in gotVertices)  
-            //         Debug.Log(v);
-            //     gotVertices.Dispose();  
-            // }
+            Debug.Log("Inside true stairMesh");
+           
         }else
         {
             Debug.Log("Nenhuma Mesh atrelada");
         }
     }
-    void Start()
-    {
-        List<Vector3> listVertices = new List<Vector3>(vertices);
-
-        stairsMesh.GetVertices(listVertices);
-        
-
-        // Debug.Log($"Vertices list length: {listVertices.Count()}");
-        // Debug.Log($"Vertices  length: {vertices.Length}");
-        // Debug.Log($"Triangles length: {triangles.Length}");
-        
-    }
-
-    // IEnumerator CollectMeshDataCoroutine()
+    // void Start()
     // {
-    //     // Wait until end of frame to ensure mesh data is fully initialized
-    //     yield return new WaitForEndOfFrame();
+    //     List<Vector3> listVertices = new List<Vector3>(vertices);
+    //     stairsMesh.GetVertices(listVertices);
+        
 
-    //     // Collect mesh data
-    //     CollectMeshData();
-
-    //     // Output mesh data to console
-    //     Debug.Log("Inside true stairMesh");
-    //     Debug.Log($"Vertices length: {vertices.Length}");
-    //     Debug.Log($"Triangles length: {triangles.Length}");
+    //     // Debug.Log($"Vertices list length: {listVertices.Count()}");
+    //     // Debug.Log($"Vertices  length: {vertices.Length}");
+    //     // Debug.Log($"Triangles length: {triangles.Length}");
+        
     // }
     
     void CollectMeshData()
     {
         vertices = stairsMesh.vertices;
         triangles = stairsMesh.triangles;
+        Debug.Log("Inside true collect");
+        Debug.Log($"Vertices length: {vertices.Length}");
+        Debug.Log($"Triangles length: {triangles.Length}");
         
     }
 
