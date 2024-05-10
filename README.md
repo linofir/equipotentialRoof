@@ -7,4 +7,8 @@
 ## ToDO
 * import a mesh ok
 * Acess Data from Mesh ok
-* Classify the direction of the triangles using their normals
+* Recreate normals. ok
+* Reorganize data classifying by face ok
+* Visualize triangles and normals methods defined by selected face.
+* Calculate dimentions of mesh.
+* Calculate mid point of Thread for EquipotentialRoof.
