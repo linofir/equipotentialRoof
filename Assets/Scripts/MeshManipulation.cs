@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Unity.Collections;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class MeshManipulation : MonoBehaviour
 {
@@ -10,18 +11,19 @@ public class MeshManipulation : MonoBehaviour
     private Vector3[] vertices;
     private int[] triangles;
     private Vector3[] normals;
+    private Vector3 orignPoint = new Vector3(0, 0, 0);
     private Vector3 xAxisUnitVector = new Vector3(1, 0, 0);
     private Vector3 yAxisUnitVector = new Vector3(0, 1, 0);
     private Vector3 zAxisUnitVector = new Vector3(0, 0, 1);
     private Dictionary<string, List<Vector3[]>> faceTriangles = new Dictionary<string, List<Vector3[]>>();
     private Dictionary<string, List<Vector3>> normalsOfTriangles = new Dictionary<string, List<Vector3>>(); 
+    public static List<Vector3> bleachersPointsFromMesh = new List<Vector3>();
 
-    
-    // Start is called before the first frame update
     void Awake()
     {
         // stairsMesh = new Mesh();
         stairsMesh = GetComponent<MeshFilter>().mesh;
+        OriginReference();
 
         if(stairsMesh != null)
         {
@@ -36,27 +38,19 @@ public class MeshManipulation : MonoBehaviour
     }
     void Start()
     {
-        VisualizeTrianglesOfFace("threadFace");
-        List<Vector3[]> triangles = faceTriangles["threadFace"];
-        triangles.ForEach(vertex => VisualizeNormalsTrianglesOfFace("threadFace", vertex[0], vertex[1], vertex[2]));
+        // VisualizeTrianglesOfFace("threadFace");
+        // List<Vector3[]> triangles = faceTriangles["threadFace"];
+        // triangles.ForEach(vertex => VisualizeNormalsTrianglesOfFace("threadFace", vertex[0], vertex[1], vertex[2]));
+        // OrganizeThreadsOfStairs(0);
+        // CalculateMidPointOfThread(1);
+        CreateBleachersPointsFromMeshList();
     }
-    
     void CollectMeshData()
     {
         vertices = stairsMesh.vertices;
         triangles = stairsMesh.triangles;
         normals = stairsMesh.normals;
     }
-
-    public void PrintVerticesOfAllTriangle(Vector3[] triangle)
-    {
-        foreach (var vertex in triangle)
-        {
-            InstantiatePoint(vertex);
-            
-        }
-    }
-
     public void ReOrganizeData()
     {
         for (int i = 0; i < triangles.Length; i++)
@@ -67,10 +61,7 @@ public class MeshManipulation : MonoBehaviour
             float normalAngleWithX = CalculateAngle(xAxisUnitVector, newNormal);
             float normalAngleWithY = CalculateAngle(yAxisUnitVector, newNormal);
             float normalAngleWithZ = CalculateAngle(zAxisUnitVector, newNormal);
-            // Debug.Log($"normal de indice {i} o angulo com x é `{normalAngleWithX}");
-            // Debug.Log($"normal de indice {i} o angulo com y é `{normalAngleWithY}");
-            // Debug.Log($"normal de indice {i} o angulo com z é `{normalAngleWithZ}");
-
+            
             if( normalAngleWithX == 0)
             {
                 AddTriangleToFace("leftStructureFace", newTriangle);
@@ -83,78 +74,41 @@ public class MeshManipulation : MonoBehaviour
 
             if( normalAngleWithY == 180)
             {
-                // Debug.Log($"normal de indice {i} pertence a  estrutura baixo");
                 AddTriangleToFace("bottomStructureFace", newTriangle);
                 AddTriangleNormal("bottomStructureFace", newNormal);
 
             }else if ( normalAngleWithY == 0)
             {
-                // Debug.Log($"normal de indice {i} pertence a Thread");
                 AddTriangleToFace("threadFace", newTriangle);
                 AddTriangleNormal("threadFace", newNormal);
             }
 
             if( normalAngleWithZ == 0)
             {
-                // Debug.Log($"normal de indice {i} pertence a riser ");
                 AddTriangleToFace("riserFace", newTriangle);
                 AddTriangleNormal("riserFace", newNormal);
 
             }else if ( normalAngleWithZ == 180)
             {
-                // Debug.Log($"normal de indice {i} pertence a estrutura fundo");
                 AddTriangleToFace("topStructureFace", newTriangle);
                 AddTriangleNormal("topStructureFace", newNormal);
             }
-
             // - Tread 0° de unity , 90° z, 90° x
             // - Riser 90° de unity , 0° z, 90° x
             // - Estrutura lateral esquerda 90° y, 90° z, 0°x 
             // - Estrutura Direita 90° y, 90° z, 180°x
             // - Estrutura fundo 90° de unity , 180° z, 90° x
             // - Estrutura baixo 180 y, 90 z, 90 x 
-
-
         }
-        
     }
-
     public Vector3 CalculateNormalOfTriangle(Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
     {
-        //Calculate  normal
         Vector3 baseVectorA = vertex1 -vertex2;
         Vector3 baseVectorB = vertex1 -vertex3;
-            
         Vector3 newNormal = Vector3.Cross(baseVectorA, baseVectorB).normalized;
-        Vector3 centroid = CalculateCentroid(vertex1, vertex2, vertex3);
 
-        //InstantiatePoint(newNormal);
-        // InstantiatePoint(centroid);
-        Vector3 visualVec = newNormal + centroid;
-        // InstantiateLine(centroid, visualVec);
-
-        float angleX = CalculateAngle(newNormal, xAxisUnitVector);
-        float angleY = CalculateAngle(newNormal, yAxisUnitVector);
-        float angleZ = CalculateAngle(newNormal, zAxisUnitVector);
-
-        // Debug.Log($"x= {angleX}, y={angleY}, z= {angleZ}");
-            
         return newNormal;
     }
-
-    public Vector3 CalculateCentroid(Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
-    {
-        // Encontre os pontos médios dos lados do triângulo
-        Vector3 midPoint1 = (vertex1 + vertex2) / 2f;
-        Vector3 midPoint2 = (vertex2 + vertex3) / 2f;
-        Vector3 midPoint3 = (vertex3 + vertex1) / 2f;
-
-        // Calcule a centróide como a média dos pontos médios
-        Vector3 centroid = (midPoint1 + midPoint2 + midPoint3) / 3f;
-
-        return centroid;
-    }
-
     public Vector3[] CollectVertexOfTriangle(int i)
     {
         int triangleIndex =  i / 3; // Calcula o índice do triângulo associado à normal
@@ -173,110 +127,7 @@ public class MeshManipulation : MonoBehaviour
         
         return newTriangle;
     }
-
-    // void ClassifyTrianglesNormals()
-    // {
-    //     //for each vector check for the angle
-    //     for( int i = 0; i < normals.Length; i++)
-    //     {
-    //         float normalAngleWithX = CalculateAngle(xAxisUnitVector, normals[i]);
-    //         float normalAngleWithY = CalculateAngle(yAxisUnitVector, normals[i]);
-    //         float normalAngleWithZ = CalculateAngle(zAxisUnitVector, normals[i]);
-    //         // Debug.Log($"normal de indice {i} o angulo com x é `{normalAngleWithX}");
-    //         // Debug.Log($"normal de indice {i} o angulo com y é `{normalAngleWithY}");
-    //         // Debug.Log($"normal de indice {i} o angulo com z é `{normalAngleWithZ}");
-
-    //         if( normalAngleWithX == 0)
-    //         {
-    //             Debug.Log($"angulox {normalAngleWithX}");
-    //             Debug.Log($"anguloy {normalAngleWithY}");
-    //             Debug.Log($"anguloz {normalAngleWithZ}");
-    //             AddTriangleToFace("leftStructureFace", i);
-    //             // AddTriangleNormal("leftStructureFace", i);
-    //         }else if ( normalAngleWithX == 180)
-    //         {
-    //             // Debug.Log($"normal de indice {i} pertence a estrutura lateral direita");
-    //             //AddTriangleToFace("rightStructureFace", i);
-    //             // AddTriangleNormal("rightStructureFace", i);
-    //         }
-
-            // if( normalAngleWithZ == 180)
-            // {
-            //     // Debug.Log($"normal de indice {i} pertence a  estrutura baixo");
-            //     AddTriangleToFace("bottomStructureFace", i);
-            //     // AddTriangleNormal("bottomStructureFace", i);
-
-            // }else if ( normalAngleWithZ == 0)
-            // {
-            //     // Debug.Log($"normal de indice {i} pertence a Thread");
-            //     AddTriangleToFace("threadFace", i);
-            //     // AddTriangleNormal("threadFace", i);
-            // }
-
-            // if( normalAngleWithY == 180)
-            // {
-            //     // Debug.Log($"normal de indice {i} pertence a riser ");
-            //     AddTriangleToFace("riserFace", i);
-            //     // AddTriangleNormal("riserFace", i);
-
-            // }else if ( normalAngleWithY == 0)
-            // {
-            //     // Debug.Log($"normal de indice {i} pertence a estrutura fundo");
-            //     AddTriangleToFace("topStructureFace", i);
-            //     // AddTriangleNormal("topStructureFace", i);
-            // }
-
-            // - Tread 0° de unity , 90° z, 90° x
-            // - Riser 90° de unity , 180° z, 90° x
-            // - Estrutura lateral esquerda 90° y, 90° z, 180°x 
-            // - Estrutura Direita 90° y, 90° z, 0°x
-            // - Estrutura fundo 90° de unity , 0° z, 90° x
-            // - Estrutura baixo 180 y, 90 z, 90 x 
-  
-
-
-        // }
-
-        // group the triangle normals in a specific face( list) of the scructure
-    // }
-
-    public float CalculateAngle(Vector3 vectorA, Vector3 vectorB)
-    {
-        float dotProduct = Vector3.Dot(vectorA, vectorB);
-        
-        float arcCosine = Mathf.Acos(dotProduct);
-
-        float angleDeg = arcCosine * Mathf.Rad2Deg;
-        
-        return angleDeg;
-    }
-
-    // void ShowNormalsByFace(List<Vector3> )
-
-    // public Vector3[] CreateTrianglesListWithVertices( int i)
-    // {
-    //     int triangleIndex = i / 3; // Calcula o índice do triângulo associado à normal
-    //     int triangleOffset = triangleIndex * 3; // Calcula o deslocamento no array de triângulos
-        
-    //     // Obtém os índices dos vértices do triângulo atual
-    //     int vertexIndex1 = triangles[triangleOffset];
-    //     int vertexIndex2 = triangles[triangleOffset + 1];
-    //     int vertexIndex3 = triangles[triangleOffset + 2];
-        
-    //     // Exibe os índices dos vértices que formam o triângulo
-    //     // Debug.Log("Normal " + i + " pertence ao triângulo com os índices: " +
-    //     //           vertexIndex1 + ", " + vertexIndex2 + ", " + vertexIndex3);
-    //     //FindTriangleVertices(vertexIndex1, vertexIndex2, vertexIndex3);
-    //     Vector3 vertex1 = vertices[vertexIndex1];
-    //     Vector3 vertex2 = vertices[vertexIndex2];
-    //     Vector3 vertex3 = vertices[vertexIndex3];
-
-    //     Vector3[] newTriangle = {vertex1,vertex2, vertex3};
-    //     return newTriangle;
-    // }
-
-
-    public void AddTriangleToFace(string faceName, Vector3[] newTriangle)
+      public void AddTriangleToFace(string faceName, Vector3[] newTriangle)
     {
         List<Vector3[]> listOfTrianglesAtFace = new List<Vector3[]>{newTriangle};
         // Verifica se a face já existe no dicionário
@@ -291,7 +142,6 @@ public class MeshManipulation : MonoBehaviour
             faceTriangles.Add(faceName, listOfTrianglesAtFace);
         }
     }
-
     public void AddTriangleNormal(string faceName, Vector3 newNormal)
     {
         Vector3 normal = newNormal;
@@ -306,9 +156,87 @@ public class MeshManipulation : MonoBehaviour
             // Se a face ainda não existe, cria uma nova face o adiciona o triangulo
             normalsOfTriangles.Add(faceName, listOfNormalsAtFace);
         }
+    }
+    public void CreateBleachersPointsFromMeshList()
+    {
+        Dictionary<int, List<Vector3[]>> organizedThreadList = OrganizeThreadsOfStairs();
+        // foreach (var key in organizedThreadList.Keys)
+        // { 
+        //     PrintVerticesOfTriangle(organizedThreadList[key]);
+        // }
+        // PrintVerticesOfTriangle(organizedThreadList[1]);
+        // PrintVerticesOfTriangle(organizedThreadList[4]);
+
+        organizedThreadList.Keys.ToList().ForEach(key => bleachersPointsFromMesh.Add(CalculateMidPointOfThread(key)));
+       
+        foreach (Vector3 point in bleachersPointsFromMesh)
+        {
+            InstantiatePoint(point);
+        }
+    }
+    public Vector3 CalculateMidPointOfThread(int selectedThread)
+    {
+        List<Vector3[]> thread = OrganizeThreadsOfStairs()[selectedThread];
+        List<Vector3[]> lefttStructureTriangles = faceTriangles["leftStructureFace"];
+        List<Vector3[]> rightStructureTriangles = faceTriangles["rightStructureFace"];
+
+        List<Vector3> leftCommonVertices = new List<Vector3>();
+        List<Vector3> rightCommonVertices = new List<Vector3>();
+
+        leftCommonVertices = thread.SelectMany(threadTriangle => lefttStructureTriangles.SelectMany(leftTriangle =>
+            threadTriangle.Where(vertex => leftTriangle.Contains(vertex)))).Distinct().ToList();
+
+        rightCommonVertices = thread.SelectMany(threadTriangle => rightStructureTriangles.SelectMany(rightTriangle =>
+            threadTriangle.Where(vertex => rightTriangle.Contains(vertex)))).Distinct().ToList();
+
+        List<Vector3> retangleVertices = leftCommonVertices.Union(rightCommonVertices).OrderBy(vertex => vertex.magnitude).ToList();
+        InstantiatePoint(retangleVertices[2]);
+        InstantiatePoint(retangleVertices[1]);
+        Vector3 diagonal1 = retangleVertices[2] - retangleVertices[1]; // Diagonal do retângulo
+
+        Vector3 midPoint = retangleVertices[1] + diagonal1 * 0.5f ;
+        InstantiatePoint(midPoint);
+        return midPoint;
+    }
+    public Dictionary<int, List<Vector3[]>> OrganizeThreadsOfStairs()
+    {
+        List<Vector3[]> desorganizedThreadList = faceTriangles["threadFace"];
+
+        var trianglesOderedByYAxis = desorganizedThreadList.GroupBy( triangle => triangle.Select(vertex => vertex[1]).Average())
+        .OrderBy(group => group.Key)
+        .Select((group, index) => new { Key = index, Group = group.ToList()});
+
+        //converte tupla em dicionário
+        Dictionary<int, List<Vector3[]>> groupedTriangles = trianglesOderedByYAxis.ToDictionary(item => item.Key, item => item.Group);
+
+        //List<Vector3[]> thread = groupedTriangles[selectedThread];
+        return groupedTriangles;
+    }
+    public List<Vector3[]> OrganizeRiserOfStairs(int selectedRiser)
+    {
+        List<Vector3[]> desorganizedRiserList = faceTriangles["riserFace"];
+
+        var trianglesOderedByZAxis = desorganizedRiserList.GroupBy( triangle => triangle.Select(vertex => vertex[2]).Average())
+        .OrderByDescending(group => group.Key)
+        .Select((group, index) => new { Key = index, Group = group.ToList()});
+
+        //converte tupla em dicionário
+        var groupedTriangles = trianglesOderedByZAxis.ToDictionary(item => item.Key, item => item.Group);
+
+        List<Vector3[]> riser = groupedTriangles[selectedRiser];
+        return riser;
 
     }
-
+    public void PrintVerticesOfTriangle(List<Vector3[]> triangle)
+    {
+        foreach (var vertex in triangle)
+        {
+            Debug.Log("Vertices do triângulo: " + vertex[0] + ", " + vertex[1] + ", " + vertex[2]);
+            InstantiatePoint(vertex[0]);
+            InstantiatePoint(vertex[1]);
+            InstantiatePoint(vertex[2]);
+        }
+    }
     public void VisualizeTrianglesOfFace(string faceName)
     {
         if (faceTriangles.ContainsKey(faceName))
@@ -328,7 +256,6 @@ public class MeshManipulation : MonoBehaviour
             Debug.Log("A face " + faceName + " não existe no dicionário.");
         }
     }
-
     public void VisualizeNormalsTrianglesOfFace(string faceName, Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
     {
         if (faceTriangles.ContainsKey(faceName))
@@ -349,7 +276,14 @@ public class MeshManipulation : MonoBehaviour
         }
         
     }
+    void OriginReference()
+    {
+        InstantiatePoint(orignPoint);
+        InstantiateLine(orignPoint, xAxisUnitVector);
+        InstantiateLine(orignPoint, yAxisUnitVector);
+        InstantiateLine(orignPoint, zAxisUnitVector);
 
+    }
     void InstantiatePoint(Vector3 position)
     {
         // Instanciar um prefab de ponto na posição especificada
@@ -363,7 +297,6 @@ public class MeshManipulation : MonoBehaviour
         // Definir a cor do objeto
         rend.material.color = Color.red;
     }
-
     public void InstantiateLine(Vector3 startPoint, Vector3 endPoint)
     {
        // Crie um objeto para representar o vetor
@@ -383,18 +316,23 @@ public class MeshManipulation : MonoBehaviour
         lineRenderer.startColor = Color.cyan;
         lineRenderer.endColor = Color.green;
     }
+    public Vector3 CalculateCentroid(Vector3 vertex1, Vector3 vertex2, Vector3 vertex3)
+    {
+        // Encontre os pontos médios dos lados do triângulo
+        Vector3 midPoint1 = (vertex1 + vertex2) / 2f;
+        Vector3 midPoint2 = (vertex2 + vertex3) / 2f;
+        Vector3 midPoint3 = (vertex3 + vertex1) / 2f;
+        // Calcule a centróide como a média dos pontos médios
+        Vector3 centroid = (midPoint1 + midPoint2 + midPoint3) / 3f;
 
-    void FindTriangleVertices(int vertexIndex1, int vertexIndex2, int vertexIndex3)
-    {    
-        // Obtém os vértices do triângulo atual
-        Vector3 vertex1 = vertices[vertexIndex1];
-        Vector3 vertex2 = vertices[vertexIndex2];
-        Vector3 vertex3 = vertices[vertexIndex3];
-            
-        // Exibe os vértices que formam o triângulo
-        Debug.Log(" tem vértices: " +
-                vertex1 + ", " + vertex2 + ", " + vertex3);
-        
+        return centroid;
+    }
+    public float CalculateAngle(Vector3 vectorA, Vector3 vectorB)
+    {
+        float dotProduct = Vector3.Dot(vectorA, vectorB);
+        float arcCosine = Mathf.Acos(dotProduct);
+        float angleDeg = arcCosine * Mathf.Rad2Deg;
+        return angleDeg;
     }
     // // Update is called once per frame
     // void Update()

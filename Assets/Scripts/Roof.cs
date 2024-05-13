@@ -21,6 +21,7 @@ public class Roof : MonoBehaviour
         }
         InstantiatePoint(source);
         InstantiatePoint( roofPointsList[0]);
+        //bleachersPoints = MeshManipulation.bleachersPointsFromMesh;
 
         CreateRoofFaces(bleachersPoints, roofPointsList, source);
         
