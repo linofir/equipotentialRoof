@@ -169,10 +169,10 @@ public class MeshManipulation : MonoBehaviour
 
         organizedThreadList.Keys.ToList().ForEach(key => bleachersPointsFromMesh.Add(CalculateMidPointOfThread(key)));
        
-        foreach (Vector3 point in bleachersPointsFromMesh)
-        {
-            InstantiatePoint(point);
-        }
+        // foreach (Vector3 point in bleachersPointsFromMesh)
+        // {
+        //     InstantiatePoint(point);
+        // }
     }
     public Vector3 CalculateMidPointOfThread(int selectedThread)
     {
@@ -190,12 +190,12 @@ public class MeshManipulation : MonoBehaviour
             threadTriangle.Where(vertex => rightTriangle.Contains(vertex)))).Distinct().ToList();
 
         List<Vector3> retangleVertices = leftCommonVertices.Union(rightCommonVertices).OrderBy(vertex => vertex.magnitude).ToList();
-        InstantiatePoint(retangleVertices[2]);
-        InstantiatePoint(retangleVertices[1]);
+        // InstantiatePoint(retangleVertices[2]);
+        // InstantiatePoint(retangleVertices[1]);
         Vector3 diagonal1 = retangleVertices[2] - retangleVertices[1]; // Diagonal do retângulo
 
         Vector3 midPoint = retangleVertices[1] + diagonal1 * 0.5f ;
-        InstantiatePoint(midPoint);
+        // InstantiatePoint(midPoint);
         return midPoint;
     }
     public Dictionary<int, List<Vector3[]>> OrganizeThreadsOfStairs()

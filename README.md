@@ -10,7 +10,7 @@
 * Recreate normals. ok
 * Reorganize data classifying by face. ok
 * Visualize triangles and normals methods defined by selected face.ok
-* Calculate midpoint of stairs Thread for EquipotentialRoof.
+* Calculate midpoint of stairs Thread for EquipotentialRoof. OK
     * Organize Threads. 
         * check the inclination of stairs.
         * if thre satais has no inclination in ralation to plane XZ => determinate grop threads to the lowest to righest Y of vertex points.
@@ -21,4 +21,5 @@
         * Find the coordanates that are thresholds, defined by the two sides of the structure.
         * Determinate the corners that intersec with the previous and posterior riser.
     * Calculate midPoint of all Threads and crete bleachersPointsList.
-* Use the midPoints of Threads as bleacherPoints.
+* Use the midPoints of Threads as bleacherPoints. OK
+    * find new direction roof reference, adapt bleachersDirection angle with Z, adapt CreateVectorWithAngle, Adapt FindIntersec.

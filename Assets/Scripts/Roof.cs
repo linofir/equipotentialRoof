@@ -6,24 +6,31 @@ using UnityEngine;
 
 public class Roof : MonoBehaviour
 {
-    public List<Vector3> bleachersPoints = new List<Vector3>();
+    private List<Vector3> bleachersPoints = MeshManipulation.bleachersPointsFromMesh;
     public Vector3 source;
     public Vector3 firstRoofPoint;
     public List<Vector3> roofPointsList;   // Start is called before the first frame update
+    void Awake()
+    {
+        
+        // bleachersPoints.AddRange(MeshManipulation.bleachersPointsFromMesh);
+        Debug.Log("awake roof " + bleachersPoints.Count());
+
+    }
     void Start()
     {
         roofPointsList.Add(firstRoofPoint);
         Debug.Log($"O número de pontos da platéia é{ roofPointsList[0]}");
-
+        InstantiatePoint(source);
+        InstantiatePoint( roofPointsList[0]);
         foreach (var point in bleachersPoints)
         {
             InstantiatePoint(point);
+            Debug.Log(point);
         }
-        InstantiatePoint(source);
-        InstantiatePoint( roofPointsList[0]);
-        //bleachersPoints = MeshManipulation.bleachersPointsFromMesh;
 
         CreateRoofFaces(bleachersPoints, roofPointsList, source);
+        bleachersPoints.Clear();
         
     }
 
@@ -62,13 +69,17 @@ public class Roof : MonoBehaviour
             
             float roofLength = 20f;
             
-            Vector3 xAxisVector = new Vector3(1, 0, 0);
+            Vector3 xAxisVector = new Vector3(0, 0, -1);
 
             float xAxisAngleWithBlechers = CalculateAngle(xAxisVector, directionBlechers); 
+            float zAxisAngleWithBlechers = Vector3.Angle(xAxisVector, directionBlechers);
+            Debug.Log("new z angle " + zAxisAngleWithBlechers);
 
-            float roofAngleWithXAxis = 90 - (bisecAngle/2) - xAxisAngleWithBlechers;
+
+            float roofAngleWithXAxis = 90 - (bisecAngle/2f) - xAxisAngleWithBlechers;
+            Debug.Log("roofAngle: " + roofAngleWithXAxis + ", ZWithBleachers: "+ xAxisAngleWithBlechers + "bisec/2: " + bisecAngle/2f);
             
-            Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, xAxisVector);
+            Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis ,  xAxisVector);
             //Vector3 directionRoof = CreateVectorFromAngle(roofAngleWithXAxis, directionBlechers);
             CreateLine(roofPoints[i], directionRoof, roofLength);
 
@@ -83,6 +94,7 @@ public class Roof : MonoBehaviour
             //add new point to roofPointsList
 
             roofPointsList.Add(intersecPoint);
+            
 
         }
         
@@ -144,11 +156,12 @@ public class Roof : MonoBehaviour
         float angleRadians = angleDegrees * Mathf.Deg2Rad;
 
         // Calcular as componentes x e y do novo vetor
-        float newX = Mathf.Cos(angleRadians);
+        float newZ = Mathf.Cos(angleRadians);
         float newY = Mathf.Sin(angleRadians);
 
         // Criar e retornar o novo vetor
-        Vector3 newVector = new Vector3(newX, newY, direction.z);
+        Vector3 newVector = new Vector3(direction.x, newY, -newZ);
+        Debug.Log(newVector);
 
         return newVector.normalized;
     }
@@ -158,7 +171,7 @@ public class Roof : MonoBehaviour
     {
         // Calcular os vetores cruzados
         Vector3 cross = Vector3.Cross(direction1, direction2);
-        float denominator = direction1.x * direction2.y - direction1.y * direction2.x;
+        float denominator = direction1.z * direction2.y - direction1.y * direction2.z;
 
         // Verificar se os vetores são paralelos (vetor cruzado aproximadamente igual a zero)
         if (cross.sqrMagnitude < 0.0001f)
@@ -169,8 +182,8 @@ public class Roof : MonoBehaviour
 
         //cramer rule
 
-        float numerator1 = (imagePoint.x - roofPoint.x) * direction2.y - (imagePoint.y - roofPoint.y) * direction2.x;
-        float numerator2 = (imagePoint.x - roofPoint.x) * direction1.y - (imagePoint.y - roofPoint.y) * direction1.x;
+        float numerator1 = (imagePoint.z - roofPoint.z) * direction2.y - (imagePoint.y - roofPoint.y) * direction2.z;
+        float numerator2 = (imagePoint.z - roofPoint.z) * direction1.y - (imagePoint.y - roofPoint.y) * direction1.z;
 
         // Calcular os parâmetros t1 e t2
         float t1 = numerator1 / denominator;
